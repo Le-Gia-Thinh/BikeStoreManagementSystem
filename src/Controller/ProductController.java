@@ -176,54 +176,59 @@ public class ProductController extends TreeMap<String , Product > implements I_L
         }
     }
   
-    @Override
+@Override
     public void save() {
-     
         try (ObjectOutputStream productOut = new ObjectOutputStream(new FileOutputStream("products.txt"));
-                ObjectOutputStream brandOut = new ObjectOutputStream(new FileOutputStream("brands.txt"));
-                ObjectOutputStream categoryOut = new ObjectOutputStream(new FileOutputStream("categories.txt"))) {
+             ObjectOutputStream brandOut = new ObjectOutputStream(new FileOutputStream("brands.txt"));
+             ObjectOutputStream categoryOut = new ObjectOutputStream(new FileOutputStream("categories.txt"))) {
 
+            // Lưu danh sách sản phẩm
             productOut.writeObject(new ArrayList<>(this.values()));
             productOut.flush();
 
+            // Lưu thương hiệu
             brandOut.writeObject(new HashMap<>(brandMap));
             brandOut.flush();
-      
+
+            // Lưu danh mục
             categoryOut.writeObject(new HashMap<>(categoryMap));
             categoryOut.flush();
+
         } catch (IOException e) {
+            System.err.println("Error saving data: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
-
-    /**
-     *
-     */
-    @Override
-    public void print() {
-        
+@Override
+        public void print() {
             try (ObjectInputStream productIn = new ObjectInputStream(new FileInputStream("products.txt"));
-                ObjectInputStream brandIn = new ObjectInputStream(new FileInputStream("brands.txt"));
-                ObjectInputStream categoryIn = new ObjectInputStream(new FileInputStream("categories.txt"))) {
+                 ObjectInputStream brandIn = new ObjectInputStream(new FileInputStream("brands.txt"));
+                 ObjectInputStream categoryIn = new ObjectInputStream(new FileInputStream("categories.txt"))) {
 
-            // Read list products
-            List<Product> productList = (List<Product>) productIn.readObject();
-            brandMap = (Map<String, Brand>) brandIn.readObject();
-            categoryMap = (Map<String, Category>) categoryIn.readObject();
-            //Sort products
+                // Đọc danh sách sản phẩm
+                List<Product> productList = (List<Product>) productIn.readObject();
+
+                // Đọc bản đồ thương hiệu và danh mục
+                brandMap = (Map<String, Brand>) brandIn.readObject();
+                categoryMap = (Map<String, Category>) categoryIn.readObject();
+
+                // Sắp xếp danh sách sản phẩm
                 productList.sort(Sort.sortByPriceThenName);
 
-            // Display product
-            Display.printProducts(productList, brandMap, categoryMap);
+                // Hiển thị sản phẩm
+                Display.printProducts(productList, brandMap, categoryMap);
 
-            }    catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                            throw new RuntimeException(e);
-                          
+            } catch (FileNotFoundException e) {
+                System.err.println("Error: Data file not found. Please save data before printing.");
+            } catch (IOException | ClassNotFoundException e) {
+                System.err.println("Error reading data: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
+
     }
 
 
